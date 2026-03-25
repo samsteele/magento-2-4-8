@@ -30,11 +30,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Write auth.json
-        env:
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
-        run: printenv COMPOSER_AUTH > auth.json
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -46,7 +41,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           secrets: |
-            id=composer_auth,src=auth.json
-
-      - name: Remove auth.json
-        run: rm auth.json
+            "composer_auth=${{ secrets.COMPOSER_AUTH }}"
