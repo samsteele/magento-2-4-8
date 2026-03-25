@@ -1,0 +1,8 @@
+.git
+vendor/
+pub/static/*
+pub/media/*
+var/
+generated/
+app/etc/env.php
+auth.json

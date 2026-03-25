@@ -33,15 +33,16 @@ RUN --mount=type=secret,id=composer_auth,dst=/var/www/html/auth.json \
 COPY app/ app/
 
 # Enable modules, compile DI and dump autoload
-RUN php bin/magento module:enable --all \
- && php bin/magento setup:di:compile \
+RUN php -d memory_limit=-1 bin/magento setup:di:compile \
  && composer dump-autoload --optimize --no-dev
 
 # Copy remaining files
 COPY . .
 
 # Deploy static content
-RUN php bin/magento setup:static-content:deploy -f en_GB en_US
+RUN php -d memory_limit=-1 bin/magento setup:static-content:deploy -f en_GB en_US \
+    --area frontend \
+    --area adminhtml
 
 RUN chown -R www-data:www-data /var/www/html
 

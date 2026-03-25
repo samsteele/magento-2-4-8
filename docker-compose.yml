@@ -1,6 +1,9 @@
 services:
   phpfpm:
-    image: php:8.4-fpm-alpine
+    build:
+      context: .
+      secrets:
+        - composer_auth
     container_name: magento2-phpfpm
     volumes:
       - ./:/var/www/html
@@ -63,3 +66,7 @@ volumes:
 networks:
   magento:
     driver: bridge
+
+secrets:
+  composer_auth:
+    file: ./auth.json
