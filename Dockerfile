@@ -36,13 +36,18 @@ COPY app/ app/
 RUN php -d memory_limit=-1 bin/magento setup:di:compile \
  && composer dump-autoload --optimize --no-dev
 
-# Copy remaining files
-COPY . .
+# Copy theme and config files needed for static content deploy
+COPY pub/ pub/
+COPY app/etc/ app/etc/
+COPY app/design/ app/design/
 
 # Deploy static content
 RUN php -d memory_limit=-1 bin/magento setup:static-content:deploy -f en_GB en_US \
     --area frontend \
     --area adminhtml
+
+# Copy remaining files
+COPY . .
 
 RUN chown -R www-data:www-data /var/www/html
 
