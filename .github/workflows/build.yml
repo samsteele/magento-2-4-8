@@ -28,7 +28,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Write auth.json
-        run: echo '${{ secrets.COMPOSER_AUTH }}' > auth.json
+        run: |
+          cat > auth.json << 'EOF'
+          ${{ secrets.COMPOSER_AUTH }}
+          EOF
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
