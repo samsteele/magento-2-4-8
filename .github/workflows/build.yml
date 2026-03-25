@@ -35,12 +35,6 @@ jobs:
           COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
         run: printenv COMPOSER_AUTH > auth.json
 
-      - name: Debug auth.json
-        run: |
-          echo "File size: $(wc -c < auth.json) bytes"
-          echo "Valid JSON: $(python3 -m json.tool auth.json > /dev/null 2>&1 && echo yes || echo no)"
-          echo "Has repo.magento.com: $(python3 -c "import json; d=json.load(open('auth.json')); print('yes' if 'repo.magento.com' in d.get('http-basic',{}) else 'no')")"
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
