@@ -26,13 +26,8 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # auth.json will be injected as a build secret
-RUN --mount=type=secret,id=composer_auth \
-    cp /run/secrets/composer_auth auth.json \
-    && cp /run/secrets/composer_auth ~/.composer/auth.json 2>/dev/null; \
-    mkdir -p ~/.composer && cp /run/secrets/composer_auth ~/.composer/auth.json \
-    && export COMPOSER_AUTH="$(cat /run/secrets/composer_auth)" \
-    && composer install --no-dev --optimize-autoloader --no-interaction \
-    && rm -f auth.json ~/.composer/auth.json
+RUN --mount=type=secret,id=composer_auth,dst=/var/www/html/auth.json \
+    composer install --no-dev --optimize-autoloader --no-interaction
 
 ## Copy app code and other relevant files
 COPY app/ app/
