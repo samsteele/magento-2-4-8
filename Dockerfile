@@ -21,6 +21,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
+COPY docker/php/php.ini /usr/local/etc/php/php.ini
 
 # Copy composer files first (better layer caching)
 COPY composer.json composer.lock ./
