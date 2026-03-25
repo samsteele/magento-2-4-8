@@ -47,3 +47,53 @@ jobs:
           cache-to: type=gha,mode=max
           secret-files: |
             composer_auth=auth.json
+
+      - name: Remove auth.json
+        run: rm auth.json
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            APP_DIR=/home/ec2-user/magento2
+            IMAGE=ghcr.io/samsteele/magento-2-4-8/magento2-phpfpm:${{ github.ref_name }}
+
+            echo "Pulling image..."
+            docker pull $IMAGE
+
+            echo "Updating image tag in docker-compose..."
+            sed -i "s|magento2-phpfpm:.*|magento2-phpfpm:${{ github.ref_name }}|g" $APP_DIR/docker-compose.yml
+
+            echo "Copying pub directory from image..."
+            TEMP=$(docker create $IMAGE)
+            docker cp $TEMP:/var/www/html/pub $APP_DIR/pub_new
+            docker rm $TEMP
+
+            echo "Syncing pub directory (excluding media)..."
+            rsync -a --exclude=media $APP_DIR/pub_new/ $APP_DIR/pub/
+            rm -rf $APP_DIR/pub_new
+
+            echo "Restarting containers..."
+            cd $APP_DIR
+            docker-compose up -d --force-recreate phpfpm nginx
+
+            echo "Waiting for database..."
+            until docker-compose exec -T mariadb mariadb-admin ping -u root --password=${MYSQL_ROOT_PASSWORD} --silent 2>/dev/null; do
+                sleep 2
+            done
+
+            echo "Running setup:upgrade..."
+            docker-compose exec -T phpfpm php -d memory_limit=-1 bin/magento setup:upgrade --keep-generated
+
+            echo "Flushing cache..."
+            docker-compose exec -T phpfpm php -d memory_limit=-1 bin/magento cache:flush
+
+            echo "Deploy complete."
