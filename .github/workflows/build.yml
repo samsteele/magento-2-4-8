@@ -41,4 +41,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           secrets: |
-            "composer_auth=${{ secrets.COMPOSER_AUTH }}"
+            composer_auth=${{ secrets.COMPOSER_AUTH }}
