@@ -82,7 +82,8 @@ jobs:
             docker rm $TEMP
 
             echo "Syncing pub directory (excluding media)..."
-            rsync -a --exclude=media $APP_DIR/pub_new/ $APP_DIR/pub/
+            sudo chown -R ec2-user:ec2-user $APP_DIR/pub_new $APP_DIR/pub
+            rsync -a --no-group --exclude=media $APP_DIR/pub_new/ $APP_DIR/pub/
             rm -rf $APP_DIR/pub_new
 
             echo "Restarting containers..."
